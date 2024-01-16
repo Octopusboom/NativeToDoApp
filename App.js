@@ -9,43 +9,31 @@ import DeleteModal from "./components/DeleteModal";
 import SnackBar from "./components/SnackBar";
 
 const TodoApp = () => {
-  const [todos, setTodos] = useState([]);
-
-  // The state for creating a new TODO
-  const [newTodo, setNewTodo] = useState("");
-
-  // The state for toggle the edit input for a TODO by id
-  const [editingTodoId, setEditingTodoId] = useState(null);
-
-  // The state for editing a TODO by id
-  const [editingTodoText, setEditingTodoText] = useState("");
-
-  // State for handling the delete confirmation modal
-  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
-
-  // I'm using this state to store the id of the todo that is going to be deleted (need for modal)
-  const [currentTodoId, setCurrentTodoId] = useState(null);
-
-  // The state for filtering the TODOS
-  const [filter, setFilter] = useState("all"); // "all", "done", or "undone"
-
-  // Snackbar state
-  const [isSnackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [todoState, setTodoState] = useState({
+    todos: [],
+    newTodo: "",
+    editingTodoId: null,
+    editingTodoText: "",
+    isDeleteModalVisible: false,
+    currentTodoId: null,
+    filter: "all",
+    isSnackbarVisible: false,
+    snackbarMessage: "",
+  });
 
   // Load todos from AsyncStorage (by using getItem)
   const loadTodos = async () => {
     try {
       const storedTodos = await AsyncStorage.getItem("todos");
       if (storedTodos) {
-        setTodos(JSON.parse(storedTodos));
+        setTodoState((prevState) => ({ ...prevState, todos: JSON.parse(storedTodos) }));
       }
     } catch (error) {
       console.error("Error loading todos:", error);
     }
   };
 
-  //  Load todos on component mounts
+  // Load todos on component mounts
   useEffect(() => {
     loadTodos();
   }, []);
@@ -62,82 +50,96 @@ const TodoApp = () => {
   // Adding a new TODO
   const addTodo = () => {
     const updatedTodos = [
-      ...todos,
-      { id: Date.now(), text: newTodo, completed: false },
+      ...todoState.todos,
+      { id: Date.now(), text: todoState.newTodo, completed: false },
     ];
-    setTodos(updatedTodos);
-    setNewTodo("");
+    setTodoState((prevState) => ({
+      ...prevState,
+      todos: updatedTodos,
+      newTodo: "",
+    }));
     saveTodos(updatedTodos);
   };
 
   // Toggles the status of a todo
   const toggleTodo = (id) => {
-    const updatedTodos = todos.map((todo) =>
+    const updatedTodos = todoState.todos.map((todo) =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     );
-    setTodos(updatedTodos);
+    setTodoState((prevState) => ({ ...prevState, todos: updatedTodos }));
     saveTodos(updatedTodos);
   };
 
   // Edit todo
   const editTodo = (id, text) => {
-    setEditingTodoId(id);
-    setEditingTodoText(text);
+    setTodoState((prevState) => ({
+      ...prevState,
+      editingTodoId: id,
+      editingTodoText: text,
+    }));
   };
+
   // Save the new text for the edited todo
   const saveEditedTodo = (id) => {
-    const updatedTodos = todos.map((todo) =>
-      todo.id === id ? { ...todo, text: editingTodoText } : todo
+    const updatedTodos = todoState.todos.map((todo) =>
+      todo.id === id ? { ...todo, text: todoState.editingTodoText } : todo
     );
-    setTodos(updatedTodos);
-    setEditingTodoId(null);
-    setEditingTodoText("");
+    setTodoState((prevState) => ({
+      ...prevState,
+      todos: updatedTodos,
+      editingTodoId: null,
+      editingTodoText: "",
+      isSnackbarVisible: true,
+      snackbarMessage: "Todo updated successfully",
+    }));
     saveTodos(updatedTodos);
-
-    // Show Snackbar
-    setSnackbarMessage("Todo updated successfully");
-    setSnackbarVisible(true);
   };
 
   // Delete TODO
   const deleteTodo = (id) => {
-    const updatedTodos = todos.filter((todo) => todo.id !== id);
-    setTodos(updatedTodos);
-    setEditingTodoId(null);
-    setEditingTodoText("");
+    const updatedTodos = todoState.todos.filter((todo) => todo.id !== id);
+    setTodoState((prevState) => ({
+      ...prevState,
+      todos: updatedTodos,
+      editingTodoId: null,
+      editingTodoText: "",
+      isDeleteModalVisible: false,
+      isSnackbarVisible: true,
+      snackbarMessage: "Todo deleted successfully",
+    }));
     saveTodos(updatedTodos);
-    setDeleteModalVisible(false);
-
-    // Show Snackbar
-    setSnackbarMessage("Todo deleted successfully");
-    setSnackbarVisible(true);
   };
 
   const renderTodo = ({ item }) => (
     <TodoItem
       item={item}
-      editingTodoId={editingTodoId}
-      editingTodoText={editingTodoText}
-      setEditingTodoId={setEditingTodoId}
-      setEditingTodoText={setEditingTodoText}
+      editingTodoId={todoState.editingTodoId}
+      editingTodoText={todoState.editingTodoText}
+      setEditingTodoId={(id) => setTodoState((prevState) => ({ ...prevState, editingTodoId: id }))}
+      setEditingTodoText={(text) =>
+        setTodoState((prevState) => ({ ...prevState, editingTodoText: text }))
+      }
       toggleTodo={toggleTodo}
       editTodo={editTodo}
       saveEditedTodo={saveEditedTodo}
       deleteTodo={() => {
-        setDeleteModalVisible(true);
-        setCurrentTodoId(item.id);
+        setTodoState((prevState) => ({
+          ...prevState,
+          isDeleteModalVisible: true,
+          currentTodoId: item.id,
+        }));
       }}
     />
   );
 
   const filterTodos = () => {
-    switch (filter) {
+    switch (todoState.filter) {
       case "done":
-        return todos.filter((todo) => todo.completed);
+        return todoState.todos.filter((todo) => todo.completed);
       case "undone":
-        return todos.filter((todo) => !todo.completed);
+        return todoState.todos.filter((todo) => !todo.completed);
       default:
-        return todos;
+        return todoState.todos;
     }
   };
 
@@ -145,11 +147,11 @@ const TodoApp = () => {
     <SafeAreaProvider>
       <View style={styles.appContainer}>
         <TodoHeader
-          newTodo={newTodo}
-          setNewTodo={setNewTodo}
+          newTodo={todoState.newTodo}
+          setNewTodo={(text) => setTodoState((prevState) => ({ ...prevState, newTodo: text }))}
           addTodo={addTodo}
-          filter={filter}
-          setFilter={setFilter}
+          filter={todoState.filter}
+          setFilter={(filter) => setTodoState((prevState) => ({ ...prevState, filter }))}
         />
         <FlatList
           data={filterTodos()}
@@ -158,18 +160,18 @@ const TodoApp = () => {
         />
         {/* Delete Confirmation Modal */}
         <DeleteModal
-          visible={isDeleteModalVisible}
-          onCancel={() => setDeleteModalVisible(false)}
+          visible={todoState.isDeleteModalVisible}
+          onCancel={() => setTodoState((prevState) => ({ ...prevState, isDeleteModalVisible: false }))}
           onConfirm={() => {
-            deleteTodo(currentTodoId);
+            deleteTodo(todoState.currentTodoId);
           }}
         />
       </View>
       <SnackBar
-          visible={isSnackbarVisible}
-          onDismiss={() => setSnackbarVisible(false)}
-          message={snackbarMessage}
-        />
+        visible={todoState.isSnackbarVisible}
+        onDismiss={() => setTodoState((prevState) => ({ ...prevState, isSnackbarVisible: false }))}
+        message={todoState.snackbarMessage}
+      />
     </SafeAreaProvider>
   );
 };
