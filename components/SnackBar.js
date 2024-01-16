@@ -4,7 +4,6 @@ import { Snackbar } from "react-native-paper";
 const SnackBar = ({ visible, onDismiss, message }) => {
   return (
     <Snackbar
-      style={{ backgroundColor: "#3C79B0" }}
       visible={visible}
       onDismiss={onDismiss}
       action={{

@@ -164,12 +164,12 @@ const TodoApp = () => {
             deleteTodo(currentTodoId);
           }}
         />
-        <SnackBar
+      </View>
+      <SnackBar
           visible={isSnackbarVisible}
           onDismiss={() => setSnackbarVisible(false)}
           message={snackbarMessage}
         />
-      </View>
     </SafeAreaProvider>
   );
 };
@@ -177,9 +177,9 @@ const TodoApp = () => {
 const styles = StyleSheet.create({
   appContainer: {
     padding: 16,
-    paddingTop: 80,
+    paddingTop: 60,
     flex: 1,
-    backgroundColor: "#fcfafa"
+    backgroundColor: "#fcfafa",
   },
 });
 
