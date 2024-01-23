@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 import CustomButton from "./CustomButton";
 
@@ -18,8 +19,22 @@ const TodoItem = ({
     backgroundColor: item.completed ? "#D7F9D0" : "#EBF1F5",
   };
 
+  const creationDate = new Date(item.createdAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  });
+
   return (
-    <View style={taskContainerStyle}>
+    <LinearGradient
+      colors={item.completed ? ["#B8F4B4", "#EBF1F5"] : ["#D9E8F2", "#EBF1F5"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }}
+      style={taskContainerStyle}
+    >
       {editingTodoId === item.id ? (
         <>
           <TextInput
@@ -38,14 +53,17 @@ const TodoItem = ({
         </>
       ) : (
         <>
-          <Text
-            style={{
-              ...styles.taskText,
-              textDecorationLine: item.completed ? "line-through" : "none",
-            }}
-          >
-            {item.text}
-          </Text>
+          <View>
+            <Text
+              style={{
+                ...styles.taskText,
+                textDecorationLine: item.completed ? "line-through" : "none",
+              }}
+            >
+              {item.text}
+            </Text>
+            <Text style={styles.creationDate}>{creationDate}</Text>
+          </View>
           <View style={styles.buttonContainer}>
             <CustomButton
               title={item.completed ? "Undo" : "Complete"}
@@ -72,7 +90,7 @@ const TodoItem = ({
           </View>
         </>
       )}
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -85,7 +103,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 10,
-    elevation: 4,
   },
   editInput: {
     flex: 1,
@@ -97,13 +114,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   taskText: {
-    flex: 1,
     fontSize: 16,
     color: "#3C79B0",
   },
   buttonContainer: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  creationDate: {
+    fontSize: 12,
+    color: "#A0A0A0",
+    fontStyle: "italic",
+    marginTop: 6
   },
 });
 

@@ -4,6 +4,7 @@ import AddButton from "./AddButton";
 import FilterTasks from "./FilterTasks";
 import Quotes from "./Quotes";
 const TodoHeader = ({ newTodo, setNewTodo, addTodo, filter, setFilter }) => {
+  
   // If the input is empty of white spaces, send the prop to disable the button
   const isAddButtonDisabled = newTodo.trim() === "";
 

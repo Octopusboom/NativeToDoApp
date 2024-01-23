@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, View, FlatList } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 import TodoHeader from "./components/TodoHeader";
 import TodoItem from "./components/TodoItem";
@@ -9,6 +10,7 @@ import DeleteModal from "./components/DeleteModal";
 import SnackBar from "./components/SnackBar";
 
 const TodoApp = () => {
+
   const [todoState, setTodoState] = useState({
     todos: [],
     newTodo: "",
@@ -26,7 +28,10 @@ const TodoApp = () => {
     try {
       const storedTodos = await AsyncStorage.getItem("todos");
       if (storedTodos) {
-        setTodoState((prevState) => ({ ...prevState, todos: JSON.parse(storedTodos) }));
+        setTodoState((prevState) => ({
+          ...prevState,
+          todos: JSON.parse(storedTodos),
+        }));
       }
     } catch (error) {
       console.error("Error loading todos:", error);
@@ -49,10 +54,14 @@ const TodoApp = () => {
 
   // Adding a new TODO
   const addTodo = () => {
-    const updatedTodos = [
-      ...todoState.todos,
-      { id: Date.now(), text: todoState.newTodo, completed: false },
-    ];
+    const newTodo = {
+      id: Date.now(),
+      text: todoState.newTodo,
+      completed: false,
+      createdAt: new Date(), // Add the creation date
+    };
+  
+    const updatedTodos = [...todoState.todos, newTodo];
     setTodoState((prevState) => ({
       ...prevState,
       todos: updatedTodos,
@@ -115,7 +124,9 @@ const TodoApp = () => {
       item={item}
       editingTodoId={todoState.editingTodoId}
       editingTodoText={todoState.editingTodoText}
-      setEditingTodoId={(id) => setTodoState((prevState) => ({ ...prevState, editingTodoId: id }))}
+      setEditingTodoId={(id) =>
+        setTodoState((prevState) => ({ ...prevState, editingTodoId: id }))
+      }
       setEditingTodoText={(text) =>
         setTodoState((prevState) => ({ ...prevState, editingTodoText: text }))
       }
@@ -145,33 +156,49 @@ const TodoApp = () => {
 
   return (
     <SafeAreaProvider>
-      <View style={styles.appContainer}>
-        <TodoHeader
-          newTodo={todoState.newTodo}
-          setNewTodo={(text) => setTodoState((prevState) => ({ ...prevState, newTodo: text }))}
-          addTodo={addTodo}
-          filter={todoState.filter}
-          setFilter={(filter) => setTodoState((prevState) => ({ ...prevState, filter }))}
+      <LinearGradient colors={["#5892c4", "#fff", "#fff"]} style={styles.rootScreen}>
+        <View style={styles.appContainer}>
+          <TodoHeader
+            newTodo={todoState.newTodo}
+            setNewTodo={(text) =>
+              setTodoState((prevState) => ({ ...prevState, newTodo: text }))
+            }
+            addTodo={addTodo}
+            filter={todoState.filter}
+            setFilter={(filter) =>
+              setTodoState((prevState) => ({ ...prevState, filter }))
+            }
+          />
+          <FlatList
+            data={filterTodos()}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={renderTodo}
+          />
+          {/* Delete Confirmation Modal */}
+          <DeleteModal
+            visible={todoState.isDeleteModalVisible}
+            onCancel={() =>
+              setTodoState((prevState) => ({
+                ...prevState,
+                isDeleteModalVisible: false,
+              }))
+            }
+            onConfirm={() => {
+              deleteTodo(todoState.currentTodoId);
+            }}
+          />
+        </View>
+        <SnackBar
+          visible={todoState.isSnackbarVisible}
+          onDismiss={() =>
+            setTodoState((prevState) => ({
+              ...prevState,
+              isSnackbarVisible: false,
+            }))
+          }
+          message={todoState.snackbarMessage}
         />
-        <FlatList
-          data={filterTodos()}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderTodo}
-        />
-        {/* Delete Confirmation Modal */}
-        <DeleteModal
-          visible={todoState.isDeleteModalVisible}
-          onCancel={() => setTodoState((prevState) => ({ ...prevState, isDeleteModalVisible: false }))}
-          onConfirm={() => {
-            deleteTodo(todoState.currentTodoId);
-          }}
-        />
-      </View>
-      <SnackBar
-        visible={todoState.isSnackbarVisible}
-        onDismiss={() => setTodoState((prevState) => ({ ...prevState, isSnackbarVisible: false }))}
-        message={todoState.snackbarMessage}
-      />
+      </LinearGradient>
     </SafeAreaProvider>
   );
 };
@@ -181,8 +208,10 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 60,
     flex: 1,
-    backgroundColor: "#fcfafa",
   },
+  rootScreen: {
+    flex: 1,
+  }
 });
 
 export default TodoApp;

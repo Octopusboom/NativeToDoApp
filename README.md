@@ -1,3 +1,7 @@
+After dowloading the app run "npm install" in order to install all dependecies.
+
+------------------------------------------------------------------------------------------
+
 1. loadTodos function:
 This function is responsible for loading the TODOs from AsyncStorage when the component mounts.
 It uses AsyncStorage.getItem to retrieve the stored TODOs.

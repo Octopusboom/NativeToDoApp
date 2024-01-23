@@ -1,19 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+
+import axios from "axios";
 
 const Quotes = () => {
-  const [quote, setQuote] = useState('');
+  const [quote, setQuote] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchQuote = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get('https://api.quotable.io/random');
+      const response = await axios.get("https://api.quotable.io/random");
       const { content } = response.data;
       setQuote(`"${content}"`);
     } catch (error) {
-      console.error('Error fetching quote:', error);
+      console.error("Error fetching quote:", error);
     }
     setIsLoading(false);
   };
@@ -23,7 +31,12 @@ const Quotes = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      style={styles.container}
+      colors={["#dedfe0", "#EBF1F5", "#EBF1F5"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       {isLoading ? (
         <ActivityIndicator size="large" color="#3C79B0" />
       ) : (
@@ -34,27 +47,26 @@ const Quotes = () => {
           </TouchableOpacity>
         </>
       )}
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 'auto',
-    borderRadius: 20,
-    backgroundColor: "#EBF1F5",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "auto",
+    borderRadius: 15,
     paddingVertical: 15,
     paddingHorizontal: 20,
-    marginBottom: 10
+    marginBottom: 10,
   },
   quoteText: {
     fontSize: 18,
     marginBottom: 10,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    color: '#3C79B0'
+    textAlign: "center",
+    fontStyle: "italic",
+    color: "#3C79B0",
   },
   newQuoteButton: {
     paddingVertical: 5,
@@ -64,8 +76,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   buttonText: {
-    color: '#fff'
-  }
+    color: "#fff",
+  },
 });
 
 export default Quotes;
